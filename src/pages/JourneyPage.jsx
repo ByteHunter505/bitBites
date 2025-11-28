@@ -1,112 +1,72 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
-import { BookOpen, Code, Layers, GitBranch, Server, Rocket } from 'lucide-react';
+import { BookOpen, Code, Layers, GitBranch, Server, Rocket, Briefcase, GraduationCap } from 'lucide-react';
 
+// 1. CONFIGURACIÓN DE "BRANCHES" (Rieles)
+// Define aquí tus ramas paralelas. El orden determina la posición de izquierda a derecha.
+const tracks = [
+  { id: 'foundation', label: 'CS Foundation', color: 'bg-blue-500', borderColor: 'border-blue-500', icon: GraduationCap },
+  { id: 'dev', label: 'Development', color: 'bg-orange-500', borderColor: 'border-orange-500', icon: Code },
+  { id: 'career', label: 'Career & Open Source', color: 'bg-purple-500', borderColor: 'border-purple-500', icon: Briefcase },
+];
+
+// 2. TUS HITOS (Ahora con la propiedad 'track')
 const journeyMilestones = [
   {
-    icon: BookOpen,
+    track: 'foundation', // Pertenece a la rama Foundation
     title: "Started CS50",
     date: "Q1 2024",
-    description: "Embarked on the foundational journey of Computer Science with Harvard's CS50. A deep dive into C, algorithms, and data structures.",
-    color: "text-orange-400"
+    description: "Embarked on the foundational journey of Computer Science with Harvard's CS50.",
+    icon: BookOpen
   },
   {
-    icon: Code,
+    track: 'dev', // Pertenece a la rama Development
     title: "Learned Python",
     date: "Q2 2024",
-    description: "Mastered the fundamentals of Python, focusing on its versatility for web development, scripting, and data analysis. Built several small projects to solidify concepts.",
-    color: "text-blue-400"
+    description: "Mastered the fundamentals of Python, focusing on scripting and data analysis.",
+    icon: Code
   },
   {
-    icon: Rocket,
+    track: 'dev',
     title: "Built First App",
     date: "Q3 2024",
-    description: "Developed and deployed a complete web application from scratch. This project taught me about the full development lifecycle, from ideation to deployment.",
-    color: "text-orange-400"
+    description: "Developed and deployed a complete web application from scratch.",
+    icon: Rocket
   },
   {
-    icon: Layers,
+    track: 'foundation', // Volvemos a Foundation (paralelo a lo anterior)
     title: "Mastered Data Structures",
     date: "Q4 2024",
-    description: "Gained a deep understanding of key data structures (Arrays, Trees, Graphs, Hash Tables) and their real-world applications in writing efficient and scalable code.",
-    color: "text-blue-400"
+    description: "Deep dive into Arrays, Trees, Graphs, and Hash Tables.",
+    icon: Layers
   },
   {
-    icon: GitBranch,
-    title: "Contributed to Open Source",
+    track: 'career', // Nueva rama
+    title: "First Open Source Contribution",
     date: "Q1 2025",
-    description: "Made my first contribution to an open-source project. Learned about collaborative workflows, code reviews, and becoming part of a developer community.",
-    color: "text-orange-400"
+    description: "Merged my first PR. Learned collaborative workflows and code reviews.",
+    icon: GitBranch
   },
   {
-    icon: Server,
-    title: "Built Full Stack Project",
+    track: 'dev',
+    title: "Full Stack Architecture",
     date: "Q2 2025",
-    description: "Created a comprehensive full-stack application, integrating a frontend framework with a backend service and database. A true test of end-to-end development skills.",
-    color: "text-blue-400"
+    description: "Integrating frontend with backend services and database.",
+    icon: Server
   },
 ];
 
-const TimelineItem = ({ milestone, index }) => {
-  const isLeft = index % 2 === 0;
-
-  const itemVariants = {
-    hidden: { opacity: 0, x: isLeft ? -50 : 50 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.6 } }
-  };
-
-  const IconComponent = milestone.icon;
-
-  return (
-    // FIX: Changed md:w-1/2 to md:w-full so the timeline uses the full container width
-    <div className="relative w-full md:w-full md:flex md:justify-between md:items-center">
-      
-      {/* LEFT SIDE (Desktop only) */}
-      <div className={`hidden md:block w-1/2 ${isLeft ? 'text-right pr-12' : 'pl-12'}`}>
-        {isLeft && (
-          <motion.div variants={itemVariants} className="bg-[#1a1a1a] p-6 rounded-lg border border-gray-800">
-            <p className={`font-mono text-sm mb-1 ${milestone.color}`}>{milestone.date}</p>
-            <h3 className="text-xl font-mono font-bold mb-2">{milestone.title}</h3>
-            <p className="text-gray-400 text-sm">{milestone.description}</p>
-          </motion.div>
-        )}
-      </div>
-
-      {/* CENTER LINE (Item specific) */}
-      <div className="hidden md:block absolute w-px h-full bg-gray-700 top-0 left-1/2 -ml-px"></div>
-
-      {/* ICON */}
-      <div className="absolute top-0 left-1/2 -ml-4 w-8 h-8 rounded-full bg-[#111111] border-2 border-gray-700 flex items-center justify-center z-10">
-        <IconComponent className={`w-4 h-4 ${milestone.color}`} />
-        <div className={`absolute w-3 h-3 rounded-full ${milestone.color === 'text-orange-400' ? 'bg-orange-400' : 'bg-blue-400'} opacity-75 animate-ping`}></div>
-      </div>
-      
-      {/* RIGHT SIDE (Desktop) & ALL MOBILE CARD */}
-      <div className={`w-full md:w-1/2 ${isLeft ? 'pl-12 md:pl-0' : 'pl-12 md:pl-12'}`}>
-         {/* FIX: Added conditional rendering.
-             On Desktop (md), if isLeft is true, this block is hidden to prevent duplication.
-             On Mobile, it always shows. 
-         */}
-         <motion.div 
-            variants={itemVariants} 
-            className={`bg-[#1a1a1a] p-6 rounded-lg border border-gray-800 ${isLeft ? 'md:hidden' : ''}`}
-         >
-            <p className={`font-mono text-sm mb-1 ${milestone.color}`}>{milestone.date}</p>
-            <h3 className="text-xl font-mono font-bold mb-2">{milestone.title}</h3>
-            <p className="text-gray-400 text-sm">{milestone.description}</p>
-          </motion.div>
-      </div>
-    </div>
-  );
-};
-
 const JourneyPage = () => {
+    // Configuración de medidas para el grafo
+    const TRACK_WIDTH = 40; // Ancho entre líneas verticales
+    const GRAPH_WIDTH = tracks.length * TRACK_WIDTH + 20; // Ancho total del área del grafo
+
     return (
         <>
             <Helmet>
                 <title>The Journey - BitBites</title>
-                <meta name="description" content="Follow my developer journey through a timeline of milestones and projects." />
+                <meta name="description" content="My developer journey visualized as a git graph." />
             </Helmet>
 
             <div className="container mx-auto px-4 py-16">
@@ -114,29 +74,115 @@ const JourneyPage = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="text-center mb-20"
+                    className="text-center mb-16"
                 >
                     <h1 className="text-4xl md:text-5xl font-mono font-bold mb-4">The Journey</h1>
-                    <p className="text-lg text-gray-400 max-w-2xl mx-auto">
-                        A timeline of key milestones, projects, and learning experiences in my developer career.
+                    <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-8">
+                        Visualizing my path through parallel branches of learning and building.
                     </p>
+                    
+                    {/* Legend (Mobile & Desktop) */}
+                    <div className="flex flex-wrap justify-center gap-4 text-sm font-mono">
+                        {tracks.map(track => (
+                            <div key={track.id} className="flex items-center gap-2">
+                                <span className={`w-3 h-3 rounded-full ${track.color}`}></span>
+                                <span className="text-gray-300">{track.label}</span>
+                            </div>
+                        ))}
+                    </div>
                 </motion.div>
 
-                <div className="relative max-w-5xl mx-auto">
-                    {/* Main vertical line for the entire container */}
-                    <div className="hidden md:block absolute w-px h-full bg-gray-700 top-0 left-1/2 -ml-px"></div>
-                    <div className="absolute md:hidden w-px h-full bg-gray-700 top-0 left-[15px]"></div>
+                <div className="relative max-w-4xl mx-auto">
                     
-                    <motion.div
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, amount: 0.2 }}
-                        className="space-y-12 md:space-y-0 flex flex-col items-center"
-                    >
-                        {journeyMilestones.map((milestone, index) => (
-                           <TimelineItem key={index} milestone={milestone} index={index} />
+                    {/* --- BACKGROUND TRACKS (The Vertical Lines) --- */}
+                    <div className="absolute top-0 bottom-0 left-0 hidden md:flex" style={{ width: GRAPH_WIDTH }}>
+                        {tracks.map((track, i) => (
+                            <div 
+                                key={track.id}
+                                className="absolute top-0 bottom-0 w-px bg-gray-800"
+                                style={{ left: (i * TRACK_WIDTH) + (TRACK_WIDTH / 2) }}
+                            ></div>
                         ))}
-                    </motion.div>
+                    </div>
+
+                    {/* --- MILESTONES --- */}
+                    <div className="space-y-8 md:space-y-12">
+                        {journeyMilestones.map((milestone, index) => {
+                            // Encontrar índice del track para calcular posición
+                            const trackIndex = tracks.findIndex(t => t.id === milestone.track);
+                            const currentTrack = tracks[trackIndex];
+                            
+                            // Posición horizontal del nodo (punto)
+                            const nodeLeftPos = (trackIndex * TRACK_WIDTH) + (TRACK_WIDTH / 2);
+
+                            return (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, margin: "-50px" }}
+                                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                                    className="relative flex flex-col md:flex-row md:items-center"
+                                >
+                                    {/* 1. VISUAL GRAPH NODE (Desktop Only) */}
+                                    <div className="hidden md:block absolute h-full" style={{ width: GRAPH_WIDTH }}>
+                                        {/* Connector Line (Horizontal) */}
+                                        <div 
+                                            className={`absolute top-1/2 h-px bg-gray-700`}
+                                            style={{ 
+                                                left: nodeLeftPos, 
+                                                right: 0 
+                                            }}
+                                        ></div>
+                                        
+                                        {/* The Node Dot */}
+                                        <div 
+                                            className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 ${currentTrack.borderColor} bg-[#111] z-10`}
+                                            style={{ left: nodeLeftPos - 8 }} // -8 para centrar (w-4 / 2)
+                                        >
+                                            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full ${currentTrack.color}`}></div>
+                                        </div>
+                                    </div>
+
+                                    {/* 2. CONTENT CARD */}
+                                    {/* En desktop, empujamos el contenido a la derecha del grafo */}
+                                    <div 
+                                        className="w-full md:pl-0"
+                                        style={{ marginLeft: window.innerWidth >= 768 ? GRAPH_WIDTH : 0 }}
+                                    >
+                                        <div className={`
+                                            relative bg-[#1a1a1a] p-6 rounded-lg border border-gray-800 
+                                            hover:border-gray-600 transition-colors group
+                                            ${/* Mobile Indicator Strip */ ''}
+                                            border-l-4 md:border-l-1
+                                        `}
+                                        style={{ borderLeftColor: window.innerWidth < 768 ? currentTrack.borderColor.replace('border-', 'var(--tw-colors-') : '' }}
+                                        >
+                                            {/* Mobile: Simple colored strip indicator (handled by border-l style above loosely or via class) */}
+                                            <div className={`md:hidden absolute left-0 top-0 bottom-0 w-1 ${currentTrack.color} rounded-l-lg`}></div>
+
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`p-2 rounded-md bg-gray-800 text-gray-300 group-hover:text-white transition-colors`}>
+                                                        <milestone.icon className="w-5 h-5" />
+                                                    </div>
+                                                    <div>
+                                                        <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-opacity-10 ${currentTrack.color.replace('bg-', 'text-')} ${currentTrack.color} bg-opacity-10`}>
+                                                            {tracks.find(t => t.id === milestone.track).label}
+                                                        </span>
+                                                        <h3 className="text-xl font-bold text-white mt-1">{milestone.title}</h3>
+                                                    </div>
+                                                </div>
+                                                <span className="font-mono text-sm text-gray-500 whitespace-nowrap">{milestone.date}</span>
+                                            </div>
+                                            
+                                            <p className="text-gray-400 pl-[52px]">{milestone.description}</p>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </>

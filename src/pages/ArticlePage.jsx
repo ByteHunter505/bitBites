@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, Clock } from 'lucide-react';
+import Markdown from 'react-markdown';
 import { articles } from '@/data/articles';
 
 const ArticlePage = () => {
@@ -13,12 +14,22 @@ const ArticlePage = () => {
     return (
       <div className="container mx-auto px-4 py-20 text-center">
         <h1 className="text-3xl font-bold text-gray-300 mb-4">Article Not Found</h1>
-        <Link to="/" className="text-orange-400 hover:text-orange-300 transition-colors">
-          ← Back to Home
+        <Link to="/blog" className="text-orange-400 hover:text-orange-300 transition-colors">
+          ← Back to Blog
         </Link>
       </div>
     );
   }
+
+  // 1. PRE-PROCESS CONTENT:
+  // Turn [[slug.md]] or [[slug]] into standard markdown link: [slug](/article/slug)
+  const contentWithLinks = useMemo(() => {
+    if (!article?.content) return "";
+    return article.content.replace(
+      /\[\[(.*?)(?:\.md)?\]\]/g,
+      (match, slug) => `[${slug}](/article/${slug})`
+    );
+  }, [article]);
 
   return (
     <>
@@ -33,8 +44,9 @@ const ArticlePage = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          {/* FIX: Changed destination from "/" to "/blog" */}
           <Link 
-            to="/" 
+            to="/blog" 
             className="inline-flex items-center gap-2 text-gray-400 hover:text-orange-400 transition-colors mb-8"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -70,19 +82,46 @@ const ArticlePage = () => {
             />
           </div>
 
-          <div className="prose prose-invert prose-orange max-w-none">
-            <div className="text-lg text-gray-300 leading-relaxed space-y-6">
-              {article.content.map((paragraph, index) => (
-                <p key={index} className="text-gray-300">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+          <div className="prose prose-invert prose-orange max-w-none text-gray-300">
+            {/* 2. CUSTOM COMPONENTS for Links & Styling */}
+            <Markdown
+              components={{
+                a: ({ node, ...props }) => {
+                  const isInternal = props.href && props.href.startsWith('/');
+                  
+                  if (isInternal) {
+                    return (
+                      <Link 
+                        to={props.href} 
+                        className="text-orange-400 hover:text-orange-300 underline underline-offset-4 decoration-orange-400/30 transition-all font-medium"
+                      >
+                        {props.children}
+                      </Link>
+                    );
+                  }
+                  
+                  return (
+                    <a 
+                      {...props} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 underline underline-offset-4 decoration-blue-400/30 transition-all"
+                    />
+                  );
+                },
+                p: ({node, ...props}) => <p className="mb-6 leading-7" {...props} />,
+                ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-6 space-y-2" {...props} />,
+                li: ({node, ...props}) => <li className="pl-2" {...props} />,
+                h2: ({node, ...props}) => <h2 className="text-2xl font-bold mt-10 mb-4 text-white" {...props} />,
+              }}
+            >
+              {contentWithLinks}
+            </Markdown>
           </div>
 
           <div className="mt-12 pt-8 border-t border-slate-800">
             <div className="flex flex-wrap gap-2">
-              {article.tags.map((tag, index) => (
+              {article.tags && article.tags.map((tag, index) => (
                 <span 
                   key={index}
                   className="px-3 py-1 rounded-full text-sm bg-slate-900 text-gray-400 border border-slate-800"

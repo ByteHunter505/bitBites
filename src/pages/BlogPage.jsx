@@ -1,15 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { articles } from '@/data/articles';
 import ArticleCard from '@/components/ArticleCard';
+import ArticleGraph from '@/components/ArticleGraph'; // Ensure you created this file!
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
+import { Search, LayoutGrid, Network } from 'lucide-react'; // Added new icons
 
 const BlogPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeCategory, setActiveCategory] = useState('All');
+    const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'graph'
 
     const categories = useMemo(() => {
         const allCategories = articles.reduce((acc, article) => {
@@ -19,13 +21,18 @@ const BlogPage = () => {
         return ['All', ...Array.from(allCategories)];
     }, []);
 
+    // This filter logic now powers BOTH views
     const filteredArticles = useMemo(() => {
         return articles.filter(article => {
             const matchesCategory = activeCategory === 'All' || article.category === activeCategory;
             const matchesSearch = searchTerm.trim() === '' ||
                 article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                article.content.some(p => p.toLowerCase().includes(searchTerm.toLowerCase()));
+                // Safely check content if it's a string (markdown) or array
+                (Array.isArray(article.content) 
+                    ? article.content.some(p => p.toLowerCase().includes(searchTerm.toLowerCase()))
+                    : article.content.toLowerCase().includes(searchTerm.toLowerCase())
+                );
             
             return matchesCategory && matchesSearch;
         });
@@ -61,23 +68,50 @@ const BlogPage = () => {
                     </p>
                 </motion.div>
 
-                {/* Search and Filter Controls */}
+                {/* Controls Section: Search + View Toggle */}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="mb-12 space-y-6"
                 >
-                    <div className="relative max-w-2xl mx-auto">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                        <Input
-                            type="text"
-                            placeholder="Search articles..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-12 bg-[#1a1a1a] border-gray-800 focus:border-orange-500/50 focus:ring-orange-500/50"
-                        />
+                    <div className="flex flex-col md:flex-row gap-4 max-w-4xl mx-auto items-center">
+                        {/* Search Bar */}
+                        <div className="relative flex-grow w-full">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                            <Input
+                                type="text"
+                                placeholder="Search articles..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-12 bg-[#1a1a1a] border-gray-800 focus:border-orange-500/50 focus:ring-orange-500/50"
+                            />
+                        </div>
+
+                        {/* View Toggle Buttons */}
+                        <div className="flex items-center gap-2 bg-[#1a1a1a] p-1 rounded-md border border-gray-800">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setViewMode('grid')}
+                                className={`${viewMode === 'grid' ? 'bg-gray-800 text-orange-400' : 'text-gray-400 hover:text-white'}`}
+                            >
+                                <LayoutGrid className="w-4 h-4 mr-2" />
+                                Grid
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setViewMode('graph')}
+                                className={`${viewMode === 'graph' ? 'bg-gray-800 text-orange-400' : 'text-gray-400 hover:text-white'}`}
+                            >
+                                <Network className="w-4 h-4 mr-2" />
+                                Graph
+                            </Button>
+                        </div>
                     </div>
+
+                    {/* Category Filters */}
                     <div className="flex flex-wrap justify-center gap-2">
                         {categories.map(category => (
                             <Button
@@ -96,24 +130,45 @@ const BlogPage = () => {
                     </div>
                 </motion.div>
 
-                {/* Articles Grid */}
-                <motion.div
-                    variants={container}
-                    initial="hidden"
-                    animate="show"
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                >
-                    {filteredArticles.length > 0 ? (
-                        filteredArticles.map(article => (
-                            <ArticleCard key={article.slug} article={article} />
-                        ))
+                {/* Content Area - Toggles between Grid and Graph */}
+                <AnimatePresence mode="wait">
+                    {viewMode === 'grid' ? (
+                        <motion.div
+                            key="grid"
+                            variants={container}
+                            initial="hidden"
+                            animate="show"
+                            exit={{ opacity: 0 }}
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                        >
+                            {filteredArticles.length > 0 ? (
+                                filteredArticles.map(article => (
+                                    <ArticleCard key={article.slug} article={article} />
+                                ))
+                            ) : (
+                                <div className="col-span-full text-center py-16">
+                                    <h3 className="text-2xl font-mono font-bold mb-2">No Articles Found</h3>
+                                    <p className="text-gray-400">Try adjusting your search or filter criteria.</p>
+                                </div>
+                            )}
+                        </motion.div>
                     ) : (
-                        <div className="col-span-full text-center py-16">
-                            <h3 className="text-2xl font-mono font-bold mb-2">No Articles Found</h3>
-                            <p className="text-gray-400">Try adjusting your search or filter criteria.</p>
-                        </div>
+                        <motion.div
+                            key="graph"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="w-full"
+                        >
+                            {/* We pass filteredArticles here, so the graph updates instantly on search */}
+                            <ArticleGraph articles={filteredArticles} />
+                            
+                            <p className="text-center text-sm text-gray-500 mt-4">
+                                Interactive Graph: Drag nodes to rearrange, click to visit.
+                            </p>
+                        </motion.div>
                     )}
-                </motion.div>
+                </AnimatePresence>
             </div>
         </>
     );
