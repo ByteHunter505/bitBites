@@ -52,15 +52,18 @@ const TimelineItem = ({ milestone, index }) => {
   const isLeft = index % 2 === 0;
 
   const itemVariants = {
-    hidden: { opacity: 0, x: isLeft ? -100 : 100 },
+    hidden: { opacity: 0, x: isLeft ? -50 : 50 },
     visible: { opacity: 1, x: 0, transition: { duration: 0.6 } }
   };
 
   const IconComponent = milestone.icon;
 
   return (
-    <div className="relative md:w-1/2 md:flex md:justify-between md:items-center">
-      <div className={`hidden md:block w-1/2 ${isLeft ? 'text-right pr-8' : 'pl-8'}`}>
+    // FIX: Changed md:w-1/2 to md:w-full so the timeline uses the full container width
+    <div className="relative w-full md:w-full md:flex md:justify-between md:items-center">
+      
+      {/* LEFT SIDE (Desktop only) */}
+      <div className={`hidden md:block w-1/2 ${isLeft ? 'text-right pr-12' : 'pl-12'}`}>
         {isLeft && (
           <motion.div variants={itemVariants} className="bg-[#1a1a1a] p-6 rounded-lg border border-gray-800">
             <p className={`font-mono text-sm mb-1 ${milestone.color}`}>{milestone.date}</p>
@@ -70,16 +73,25 @@ const TimelineItem = ({ milestone, index }) => {
         )}
       </div>
 
+      {/* CENTER LINE (Item specific) */}
       <div className="hidden md:block absolute w-px h-full bg-gray-700 top-0 left-1/2 -ml-px"></div>
 
-      <div className="absolute top-0 left-1/2 -ml-4 w-8 h-8 rounded-full bg-[#111111] border-2 border-gray-700 flex items-center justify-center">
+      {/* ICON */}
+      <div className="absolute top-0 left-1/2 -ml-4 w-8 h-8 rounded-full bg-[#111111] border-2 border-gray-700 flex items-center justify-center z-10">
         <IconComponent className={`w-4 h-4 ${milestone.color}`} />
         <div className={`absolute w-3 h-3 rounded-full ${milestone.color === 'text-orange-400' ? 'bg-orange-400' : 'bg-blue-400'} opacity-75 animate-ping`}></div>
       </div>
       
-      {/* Mobile & Right side desktop */}
-      <div className={`w-full md:w-1/2 ${isLeft ? 'pl-12 md:pl-0' : 'pl-12 md:pl-8'}`}>
-         <motion.div variants={itemVariants} className="bg-[#1a1a1a] p-6 rounded-lg border border-gray-800">
+      {/* RIGHT SIDE (Desktop) & ALL MOBILE CARD */}
+      <div className={`w-full md:w-1/2 ${isLeft ? 'pl-12 md:pl-0' : 'pl-12 md:pl-12'}`}>
+         {/* FIX: Added conditional rendering.
+             On Desktop (md), if isLeft is true, this block is hidden to prevent duplication.
+             On Mobile, it always shows. 
+         */}
+         <motion.div 
+            variants={itemVariants} 
+            className={`bg-[#1a1a1a] p-6 rounded-lg border border-gray-800 ${isLeft ? 'md:hidden' : ''}`}
+         >
             <p className={`font-mono text-sm mb-1 ${milestone.color}`}>{milestone.date}</p>
             <h3 className="text-xl font-mono font-bold mb-2">{milestone.title}</h3>
             <p className="text-gray-400 text-sm">{milestone.description}</p>
@@ -110,7 +122,8 @@ const JourneyPage = () => {
                     </p>
                 </motion.div>
 
-                <div className="relative">
+                <div className="relative max-w-5xl mx-auto">
+                    {/* Main vertical line for the entire container */}
                     <div className="hidden md:block absolute w-px h-full bg-gray-700 top-0 left-1/2 -ml-px"></div>
                     <div className="absolute md:hidden w-px h-full bg-gray-700 top-0 left-[15px]"></div>
                     
